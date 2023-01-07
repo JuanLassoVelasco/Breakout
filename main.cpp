@@ -12,6 +12,8 @@
 #include "iostream"
 #include "sstream"
 
+#define GLFW_INCLUDE_GLCOREARB
+
 const unsigned int WINDOW_WIDTH = 800;
 const unsigned int WINDOW_HEIGHT = 600;
 
@@ -98,7 +100,7 @@ int main(int argc, char const *argv[])
         glfwSwapBuffers(window);
     }
 
-    // ResourceLoader::Clear();
+    ResourceLoader::Clear();
     
     glfwTerminate();
 

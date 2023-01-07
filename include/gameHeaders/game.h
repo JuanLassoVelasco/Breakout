@@ -3,6 +3,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <gameHeaders/spriteRenderer.h>
 
 enum GameState 
 {
