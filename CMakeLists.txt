@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}
     src/resourceLoader.cpp 
     src/spriteRenderer.cpp 
     src/gameObject.cpp
+    src/gameLevel.cpp
     src/game.cpp 
     src/main.cpp
 )

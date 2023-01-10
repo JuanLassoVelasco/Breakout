@@ -10,11 +10,18 @@ Game::Game(unsigned int w, unsigned int h): State(GAME_ACTIVE), Keys(), width(w)
 
 Game::~Game()
 {
-
+    // delete Renderer;
 }
 
 void Game::Init() 
 {
+    GameLevel lvlOne;
+    GameLevel lvlTwo;
+    GameLevel lvlThree;
+    GameLevel lvlFour;
+
+    float lvlHeight = height / 2;
+
     ResourceLoader::LoadShader("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/shaders/vertexShader.vs", "/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/shaders/fragmentShader.fs", nullptr, "sprite");
 
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->width), static_cast<float>(this->height), 0.0f, -1.0f, 1.0f);
@@ -27,7 +34,29 @@ void Game::Init()
 
     Renderer = new SpriteRenderer(spriteShader);
 
+    ResourceLoader::LoadTexture("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/assets/background.jpg", false, "background");
+    ResourceLoader::LoadTexture("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/assets/block.png", false, "block");
+    ResourceLoader::LoadTexture("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/assets/block_solid.png", false, "block_solid");
     ResourceLoader::LoadTexture("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/assets/awesomeface.png", true, "face");
+
+    try
+    {
+        lvlOne.LoadLevel("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/levels/level1.txt", this->width, lvlHeight);
+        lvlTwo.LoadLevel("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/levels/level2.txt", this->width, lvlHeight);
+        lvlThree.LoadLevel("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/levels/level3.txt", this->width, lvlHeight);
+        lvlFour.LoadLevel("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/levels/level4.txt", this->width, lvlHeight);
+    }
+    catch(const invalid_input & e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+
+    this->Levels.push_back(lvlOne);
+    this->Levels.push_back(lvlTwo);
+    this->Levels.push_back(lvlThree);
+    this->Levels.push_back(lvlFour);
+
+    this->Level = 0;
 }
 
 void Game::SetKey(int key, bool value) 
@@ -68,7 +97,15 @@ void Game::Update(float dt)
 
 void Game::Render() 
 {
-    Texture2D spriteTexture = ResourceLoader::GetTexture("face");
+    Texture2D backGroundTex = ResourceLoader::GetTexture("background");
+    Texture2D faceTex = ResourceLoader::GetTexture("face");
 
-    Renderer->DrawSprite(spriteTexture, glm::vec2(200.0f, 200.0f), glm::vec2(300.0f, 400.0f), 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    if (this->State == GAME_ACTIVE)
+    {
+        Renderer->DrawSprite(backGroundTex, glm::vec2(0.0f, 0.0f), glm::vec2(this->width, this->height));
+
+        if (this->Levels.size() <= 0) {return;}
+        
+        this->Levels[this->Level].DrawLevel(*Renderer);
+    }
 }

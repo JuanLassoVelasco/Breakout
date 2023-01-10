@@ -4,6 +4,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <gameHeaders/spriteRenderer.h>
+#include <gameHeaders/gameLevel.h>
+#include "vector"
 
 enum GameState 
 {
@@ -19,6 +21,8 @@ private:
     bool Keys[1024];
     unsigned int width;
     unsigned int height;
+    std::vector<GameLevel> Levels;
+    unsigned int Level;
 public:
     Game(unsigned int w, unsigned int h);
     ~Game();

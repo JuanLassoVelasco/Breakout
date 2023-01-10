@@ -1,5 +1,5 @@
-#ifndef __GAME_OBJECT__
-#define __GAME_OBJECT__
+#ifndef __GAME_OBJECT_H__
+#define __GAME_OBJECT_H__
 
 #include <gameHeaders/texture.h>
 #include <glm/glm.hpp>
@@ -9,17 +9,17 @@ class GameObject
 {
 private:
     glm::vec2 position;
-    glm::vec2 velocity;
     glm::vec2 size;
-    float rotation;
-    glm::vec3 color;
     Texture2D objectTexture;
+    glm::vec3 color;
+    float rotation;
+    glm::vec2 velocity;  
 public:
     bool isSolid;
     bool isDestroyed;
 
     GameObject();
-    GameObject(glm::vec2 iPos, glm::vec2 s, bool solid, Texture2D tex, float r = 0.0f, glm::vec2 iVel = glm::vec2(0.0f, 0.0f), glm::vec3 c = glm::vec3(1.0f));
+    GameObject(glm::vec2 iPos, glm::vec2 s, bool solid, Texture2D tex, glm::vec3 c = glm::vec3(1.0f), float r = 0.0f, glm::vec2 iVel = glm::vec2(0.0f, 0.0f));
     ~GameObject();
     glm::vec2 GetPosition() {return position;}
     glm::vec2 GetVelocity() {return velocity;}
