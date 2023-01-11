@@ -1,6 +1,11 @@
 #include <gameHeaders/game.h>
 #include <glm/ext/matrix_clip_space.hpp>
 
+const glm::vec2 PLAYER_SIZE(100.0f, 20.0f);
+const float PLAYER_SPEED(500.0f);
+
+GameObject* Player;
+
 SpriteRenderer *Renderer;
 
 Game::Game(unsigned int w, unsigned int h): State(GAME_ACTIVE), Keys(), width(w), height(h) 
@@ -37,7 +42,10 @@ void Game::Init()
     ResourceLoader::LoadTexture("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/assets/background.jpg", false, "background");
     ResourceLoader::LoadTexture("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/assets/block.png", false, "block");
     ResourceLoader::LoadTexture("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/assets/block_solid.png", false, "block_solid");
+    ResourceLoader::LoadTexture("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/assets/paddle.png", true, "paddle");
     ResourceLoader::LoadTexture("/home/juan-ros-workspace/Documents/OpenGL_Dev/Breakout/assets/awesomeface.png", true, "face");
+
+    Texture2D playerSprite = ResourceLoader::GetTexture("paddle");
 
     try
     {
@@ -56,7 +64,11 @@ void Game::Init()
     this->Levels.push_back(lvlThree);
     this->Levels.push_back(lvlFour);
 
-    this->Level = 0;
+    this->Level = 3;
+
+    glm::vec2 playerPos = glm::vec2(this->width / 2.0f - PLAYER_SIZE.x / 2.0f, this->height - PLAYER_SIZE.y);
+
+    Player = new GameObject(playerPos, PLAYER_SIZE, false, playerSprite);
 }
 
 void Game::SetKey(int key, bool value) 
@@ -87,7 +99,31 @@ void Game::SetScreenWidthAndHeight(unsigned int newWidth, unsigned int newHeight
 
 void Game::ProcessInput(float dt) 
 {
+    if (this->State == GAME_ACTIVE)
+    {
+        float velocity = PLAYER_SPEED * dt;
 
+        if (this->Keys[GLFW_KEY_A]) 
+        {
+            glm::vec2 playerPos = Player->GetPosition();
+
+            if (playerPos.x >= 0.0f) 
+            {
+                playerPos.x -= velocity;
+                Player->SetPosition(playerPos);
+            }
+        }
+        else if (this->Keys[GLFW_KEY_D])
+        {
+            glm::vec2 playerPos = Player->GetPosition();
+
+            if (playerPos.x <= width - PLAYER_SIZE.x)
+            {
+                playerPos.x += velocity;
+                Player->SetPosition(playerPos);
+            }
+        }
+    }
 }
 
 void Game::Update(float dt) 
@@ -107,5 +143,7 @@ void Game::Render()
         if (this->Levels.size() <= 0) {return;}
         
         this->Levels[this->Level].DrawLevel(*Renderer);
+
+        Player->Draw(*Renderer);
     }
 }
