@@ -119,6 +119,13 @@ void Game::ProcessInput(float dt)
             {
                 playerPos.x -= velocity;
                 Player->SetPosition(playerPos);
+                
+                if (GameBall->isStuck)
+                {
+                    glm::vec2 ballPos = GameBall->GetPosition();
+                    ballPos.x -= velocity;
+                    GameBall->SetPosition(ballPos);
+                }
             }
         }
         else if (this->Keys[GLFW_KEY_D])
@@ -129,6 +136,13 @@ void Game::ProcessInput(float dt)
             {
                 playerPos.x += velocity;
                 Player->SetPosition(playerPos);
+
+                if (GameBall->isStuck)
+                {
+                    glm::vec2 ballPos = GameBall->GetPosition();
+                    ballPos.x += velocity;
+                    GameBall->SetPosition(ballPos);
+                }
             }
         }
 

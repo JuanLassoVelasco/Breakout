@@ -28,10 +28,10 @@ glm::vec2 Ball::Move(float dt, unsigned int screenWidth)
         SetVelocity(ballVel);
         SetPosition(ballPos);
     }
-    else if (ballPos.x >= screenWidth + 2 * radius)
+    else if (ballPos.x >= screenWidth - 2 * radius)
     {
         ballVel.x = -ballVel.x;
-        ballPos.x = screenWidth + 2 * radius;
+        ballPos.x = screenWidth - 2 * radius;
         SetVelocity(ballVel);
         SetPosition(ballPos);
     }
