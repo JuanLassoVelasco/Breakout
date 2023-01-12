@@ -19,8 +19,8 @@ class Game
 private:
     GameState State;
     bool Keys[1024];
-    unsigned int width;
-    unsigned int height;
+    unsigned int gameWidth;
+    unsigned int gameHeight;
     std::vector<GameLevel> Levels;
     unsigned int Level;
 public:
@@ -29,8 +29,8 @@ public:
     void Init();
     bool GetKey(int key) {return Keys[key];}
     GameState GetGameState() {return State;}
-    unsigned int GetScreenWidth() {return width;}
-    unsigned int GetScreenHeight() {return height;}
+    unsigned int GetScreenWidth() {return gameWidth;}
+    unsigned int GetScreenHeight() {return gameHeight;}
     void SetKey(int key, bool value);
     void SetGameState(GameState newState);
     void SetScreenWidth(unsigned int newWidth);
