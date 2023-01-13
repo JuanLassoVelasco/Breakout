@@ -23,6 +23,8 @@ private:
     unsigned int gameHeight;
     std::vector<GameLevel> Levels;
     unsigned int Level;
+
+    bool CheckCollision(GameObject& objectOne, GameObject& objectTwo);
 public:
     Game(unsigned int w, unsigned int h);
     ~Game();
@@ -39,6 +41,7 @@ public:
     void ProcessInput(float dt);
     void Update(float dt);
     void Render();
+    void FindCollisions();
 };
 
 #endif

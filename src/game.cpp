@@ -156,6 +156,8 @@ void Game::ProcessInput(float dt)
 void Game::Update(float dt) 
 {
     GameBall->Move(dt, gameWidth);
+
+    FindCollisions();
 }
 
 void Game::Render() 
@@ -173,5 +175,44 @@ void Game::Render()
 
         Player->Draw(*Renderer);
         GameBall->Draw(*Renderer);
+    }
+}
+
+bool Game::CheckCollision(GameObject &objectOne, GameObject &objectTwo)
+{
+    bool collisionX;
+    bool collisionY;
+    bool collided;
+
+    glm::vec2 obOnePos = objectOne.GetPosition();
+    glm::vec2 obTwoPos = objectTwo.GetPosition();
+
+    glm::vec2 obOneSize = objectOne.GetSize();
+    glm::vec2 obTwoSize = objectTwo.GetSize();
+
+    collisionX = (obOnePos.x + obOneSize.x >= obTwoPos.x && obTwoPos.x + obTwoSize.x >= obOnePos.x);
+    collisionY = (obOnePos.y + obOneSize.y >= obTwoPos.y && obTwoPos.y + obTwoSize.y >= obOnePos.y); 
+
+    collided = collisionX && collisionY;
+
+    return collided;
+}
+
+void Game::FindCollisions()
+{
+    GameLevel* currentLevel = &this->Levels[this->Level];
+
+    for (GameObject &brick: *currentLevel->GetBricks())
+    {
+        if (!brick.isDestroyed)
+        {
+            if (CheckCollision(brick, *GameBall))
+            {
+                if (!brick.isSolid)
+                {
+                    brick.isDestroyed = true;
+                }
+            }
+        }
     }
 }

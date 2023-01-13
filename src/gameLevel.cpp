@@ -87,7 +87,7 @@ void GameLevel::initLevel(std::vector<std::vector<unsigned int>> brickData, unsi
                     color = glm::vec3(1.0f, 0.5f, 0.0f);
                 }
 
-                GameObject obj(pos, size, true, blockTex, color);
+                GameObject obj(pos, size, false, blockTex, color);
                 this->Bricks.push_back(obj);
             }
         }
@@ -119,4 +119,9 @@ bool GameLevel::IsComplete()
     if (bricksLeft <= 0) {return true;}
     
     return false;
+}
+
+std::vector<GameObject>* GameLevel::GetBricks()
+{
+    return &this->Bricks;
 }

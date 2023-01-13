@@ -19,6 +19,7 @@ public:
     void LoadLevel(const char* file, unsigned int levelWidth, unsigned int levelHeight);
     void DrawLevel(SpriteRenderer &renderer);
     bool IsComplete();
+    std::vector<GameObject>* GetBricks();
 };
 
 #endif
