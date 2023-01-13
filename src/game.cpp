@@ -1,6 +1,5 @@
 #include <gameHeaders/game.h>
 #include <glm/ext/matrix_clip_space.hpp>
-#include <prefabs/ball.hpp>
 
 const glm::vec2 PLAYER_SIZE(100.0f, 20.0f);
 const float PLAYER_SPEED(500.0f);
@@ -198,6 +197,39 @@ bool Game::CheckCollision(GameObject &objectOne, GameObject &objectTwo)
     return collided;
 }
 
+bool Game::CheckCtoBCollision(Ball& ballObject, GameObject& boxObject)
+{
+    glm::vec2 boxPos = boxObject.GetPosition();
+    glm::vec2 ballPos = ballObject.GetPosition();
+
+    glm::vec2 boxSize = boxObject.GetSize();
+    float ballRadius = ballObject.GetRadius();
+
+    float halfBoxX = boxSize.x / 2.0f;
+    float halfBoxY = boxSize.y / 2.0f;
+
+    glm::vec2 boxCenterPos = boxPos;
+    glm::vec2 ballCenterPos = ballPos;
+    boxCenterPos.x += halfBoxX;
+    ballCenterPos.x += ballRadius;
+    boxCenterPos.y += halfBoxY;
+    ballCenterPos.y += ballRadius;
+
+    glm::vec2 CenterDiff = ballCenterPos - boxCenterPos;
+    glm::vec2 boxP = CenterDiff;
+
+    boxP.x = std::clamp<float>(boxP.x, -halfBoxX, halfBoxX);
+    boxP.y = std::clamp<float>(boxP.y, -halfBoxY, halfBoxY);
+
+    boxP = boxCenterPos + boxP;
+
+    glm::vec2 distFromBall = ballCenterPos - boxP;
+
+    float distMag = glm::length(distFromBall);
+
+    return distMag < ballObject.GetRadius();
+}
+
 void Game::FindCollisions()
 {
     GameLevel* currentLevel = &this->Levels[this->Level];
@@ -206,7 +238,7 @@ void Game::FindCollisions()
     {
         if (!brick.isDestroyed)
         {
-            if (CheckCollision(brick, *GameBall))
+            if (CheckCtoBCollision(*GameBall, brick))
             {
                 if (!brick.isSolid)
                 {

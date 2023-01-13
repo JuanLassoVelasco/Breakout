@@ -5,6 +5,8 @@
 #include <GLFW/glfw3.h>
 #include <gameHeaders/spriteRenderer.h>
 #include <gameHeaders/gameLevel.h>
+#include <prefabs/ball.hpp>
+#include "algorithm"
 #include "vector"
 
 enum GameState 
@@ -25,6 +27,7 @@ private:
     unsigned int Level;
 
     bool CheckCollision(GameObject& objectOne, GameObject& objectTwo);
+    bool CheckCtoBCollision(Ball& ballObject, GameObject& boxObject);
 public:
     Game(unsigned int w, unsigned int h);
     ~Game();
