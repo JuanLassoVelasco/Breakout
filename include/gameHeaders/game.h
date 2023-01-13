@@ -6,6 +6,7 @@
 #include <gameHeaders/spriteRenderer.h>
 #include <gameHeaders/gameLevel.h>
 #include <prefabs/ball.hpp>
+#include "tuple"
 #include "algorithm"
 #include "vector"
 
@@ -15,6 +16,16 @@ enum GameState
     GAME_MENU,
     GAME_WIN
 };
+
+enum Direction
+{
+    UP,
+    RIGHT,
+    DOWN,
+    LEFT,
+};
+
+typedef std::tuple<bool, Direction, glm::vec2> Collision;
 
 class Game
 {
@@ -27,7 +38,9 @@ private:
     unsigned int Level;
 
     bool CheckCollision(GameObject& objectOne, GameObject& objectTwo);
-    bool CheckCtoBCollision(Ball& ballObject, GameObject& boxObject);
+    Collision CheckCtoBCollision(Ball& ballObject, GameObject& boxObject);
+    void HandlePlayerCollisions();
+    void ResolveBallCollision(Collision collision);
 public:
     Game(unsigned int w, unsigned int h);
     ~Game();
@@ -44,7 +57,9 @@ public:
     void ProcessInput(float dt);
     void Update(float dt);
     void Render();
-    void FindCollisions();
+    void HandleCollisions();
+    void ResetGame();
+    void ResetPlayer(glm::vec2 playerPos);
 };
 
 #endif

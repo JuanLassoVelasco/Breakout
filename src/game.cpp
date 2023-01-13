@@ -7,10 +7,38 @@ const float PLAYER_SPEED(500.0f);
 const glm::vec2 INIT_BALL_VELOCITY(100.0f, -350.0f);
 const float BALL_RADIUS = 12.5f;
 
+const float BALL_SPEED_CHANGE_STRENGTH = 2.0f;
+
 GameObject* Player;
 Ball* GameBall;
 
 SpriteRenderer *Renderer;
+
+Direction VectorDirection(glm::vec2 vec)
+{
+    glm::vec2 compass[] = {
+        glm::vec2(0.0f, 1.0f),
+        glm::vec2(1.0f, 0.0f),
+        glm::vec2(0.0f, -1.0f),
+        glm::vec2(-1.0f, 0.0f)
+    };
+
+    float max = 0.0f;
+    unsigned int direction;
+
+    for (unsigned int i = 0; i < 4; i++)
+    {
+        float dot_product = glm::dot(glm::normalize(vec), compass[i]);
+
+        if (dot_product > max)
+        {
+            max = dot_product;
+            direction = i;
+        }
+    }
+
+    return (Direction)direction;
+}
 
 Game::Game(unsigned int w, unsigned int h): State(GAME_ACTIVE), Keys(), gameWidth(w), gameHeight(h) 
 {
@@ -104,6 +132,7 @@ void Game::SetScreenWidthAndHeight(unsigned int newWidth, unsigned int newHeight
     gameHeight = newHeight;
 }
 
+
 void Game::ProcessInput(float dt) 
 {
     if (this->State == GAME_ACTIVE)
@@ -156,7 +185,12 @@ void Game::Update(float dt)
 {
     GameBall->Move(dt, gameWidth);
 
-    FindCollisions();
+    HandleCollisions();
+
+    if (GameBall->GetPosition().y >= gameHeight)
+    {
+        ResetGame();
+    }
 }
 
 void Game::Render() 
@@ -174,6 +208,52 @@ void Game::Render()
 
         Player->Draw(*Renderer);
         GameBall->Draw(*Renderer);
+    }
+}
+
+void Game::ResolveBallCollision(Collision collision)
+{
+    Direction penDir = std::get<1>(collision);
+    glm::vec2 distFromBall = std::get<2>(collision);
+    glm::vec2 ballPos = GameBall->GetPosition();
+    glm::vec2 ballVel = GameBall->GetVelocity();
+    float ballRad = GameBall->GetRadius();
+    glm::vec2 penDist = glm::vec2(ballRad, ballRad);
+
+    penDist.x = penDist.x - std::abs(distFromBall.x);
+    penDist.y = penDist.y - std::abs(distFromBall.y);
+
+    if (penDir == LEFT || penDir == RIGHT)
+    {
+        ballVel.x = -ballVel.x;
+
+        if (penDir == LEFT)
+        {
+            ballPos.x += penDist.x;
+        }
+        else
+        {
+            ballPos.x -= penDist.x;
+        }
+
+        GameBall->SetPosition(ballPos);
+        GameBall->SetVelocity(ballVel);
+    }
+    else 
+    {
+        ballVel.y = -ballVel.y;
+
+        if (penDir == DOWN)
+        {
+            ballPos.y += penDist.y;
+        }
+        else
+        {
+            ballPos.y -= penDist.y;
+        }
+
+        GameBall->SetPosition(ballPos);
+        GameBall->SetVelocity(ballVel);
     }
 }
 
@@ -197,7 +277,7 @@ bool Game::CheckCollision(GameObject &objectOne, GameObject &objectTwo)
     return collided;
 }
 
-bool Game::CheckCtoBCollision(Ball& ballObject, GameObject& boxObject)
+Collision Game::CheckCtoBCollision(Ball& ballObject, GameObject& boxObject)
 {
     glm::vec2 boxPos = boxObject.GetPosition();
     glm::vec2 ballPos = ballObject.GetPosition();
@@ -223,14 +303,43 @@ bool Game::CheckCtoBCollision(Ball& ballObject, GameObject& boxObject)
 
     boxP = boxCenterPos + boxP;
 
-    glm::vec2 distFromBall = ballCenterPos - boxP;
+    glm::vec2 distFromBall = boxP - ballCenterPos;
 
     float distMag = glm::length(distFromBall);
 
-    return distMag < ballObject.GetRadius();
+    if (distMag < ballObject.GetRadius())
+    {
+        return std::make_tuple(true, VectorDirection(distFromBall), distFromBall);
+    }
+    else
+    {
+        return std::make_tuple(false, UP, glm::vec2(0.0f, 0.0f));
+    }
 }
 
-void Game::FindCollisions()
+void Game::HandlePlayerCollisions()
+{
+    Collision collision = CheckCtoBCollision(*GameBall, *Player);
+
+    if (std::get<0>(collision))
+    {
+        glm::vec2 playerPos = Player->GetPosition();
+        glm::vec2 ballPos = GameBall->GetPosition();
+        glm::vec2 ballVel = GameBall->GetVelocity();
+        glm::vec2 playerSize = Player->GetSize();
+        float ballRad = GameBall->GetRadius();
+
+        float playerCenterPos = playerPos.x + playerSize.x / 2.0f;
+        float landDistance = (ballPos.x + ballRad) - playerCenterPos;
+        float percentDist = landDistance / (playerSize.x / 2.0f);
+
+        ballVel.x = INIT_BALL_VELOCITY.x * percentDist * BALL_SPEED_CHANGE_STRENGTH;
+        ballVel.y = -1.0 * std::abs(ballVel.y);
+        GameBall->SetVelocity(ballVel);
+    }
+}
+
+void Game::HandleCollisions()
 {
     GameLevel* currentLevel = &this->Levels[this->Level];
 
@@ -238,13 +347,42 @@ void Game::FindCollisions()
     {
         if (!brick.isDestroyed)
         {
-            if (CheckCtoBCollision(*GameBall, brick))
+            Collision collision = CheckCtoBCollision(*GameBall, brick);
+
+            if (std::get<0>(collision))
             {
                 if (!brick.isSolid)
                 {
                     brick.isDestroyed = true;
                 }
+
+                ResolveBallCollision(collision);
             }
         }
     }
+
+    HandlePlayerCollisions();
+}
+
+void Game::ResetGame()
+{
+    delete GameBall;
+
+    Texture2D ballSprite = ResourceLoader::GetTexture("face");
+    glm::vec2 playerPos = glm::vec2(this->gameWidth / 2.0f - PLAYER_SIZE.x / 2.0f, this->gameHeight - PLAYER_SIZE.y);
+    glm::vec2 ballPos = playerPos + glm::vec2(PLAYER_SIZE.x / 2.0f - BALL_RADIUS, -BALL_RADIUS * 2.0f);
+
+    GameBall = new Ball(ballPos, BALL_RADIUS, INIT_BALL_VELOCITY, ballSprite);
+
+    this->Levels[Level].ResetLevel();
+    ResetPlayer(playerPos);
+}
+
+void Game::ResetPlayer(glm::vec2 playerPos)
+{
+    delete Player;
+
+    Texture2D playerSprite = ResourceLoader::GetTexture("paddle");
+
+    Player = new GameObject(playerPos, PLAYER_SIZE, false, playerSprite);
 }

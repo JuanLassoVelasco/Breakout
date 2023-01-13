@@ -121,7 +121,22 @@ bool GameLevel::IsComplete()
     return false;
 }
 
-std::vector<GameObject>* GameLevel::GetBricks()
+void GameLevel::ResetLevel()
+{
+    for (size_t i = 0; i < Bricks.size(); i++)
+    {
+        if (this->Bricks[i].isSolid) {continue;}
+
+        if (this->Bricks[i].isDestroyed) 
+        {
+            this->Bricks[i].isDestroyed = false;
+        }
+    }
+}
+
+std::vector<GameObject> *GameLevel::GetBricks()
 {
     return &this->Bricks;
 }
+
+
